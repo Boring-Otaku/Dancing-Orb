@@ -1,17 +1,18 @@
 import { AudioManager } from './AudioManager.js';
 import { Orb } from './Orb.js';
 import { Stage } from './Stage.js';
+// import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js';
+
 
 export class Main {
   constructor() {
-    console.log('Main initialized, renderer size', window.innerWidth, window.innerHeight);
+    // Scene setup
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
     this.camera.position.set(0, 10, 20);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setClearColor(0x111111, 1);
     document.body.appendChild(this.renderer.domElement);
 
     // Lights
@@ -45,11 +46,7 @@ export class Main {
 
   animate() {
     requestAnimationFrame(this.animate.bind(this));
-    if (!this.audio.sourceNode) {
-      // Still render static scene when no audio
-      this.renderer.render(this.scene, this.camera);
-      return;
-    }
+    if (!this.audio.sourceNode) return; // wait for media
     const data = this.audio.update();
     const bass = this.audio.getBass();
     const mid = this.audio.getMid();
