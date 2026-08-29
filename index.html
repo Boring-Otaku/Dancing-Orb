@@ -22,8 +22,21 @@
     </style>
   </head>
   <body>
+    <input type="file" id="file-input" accept="audio/*" style="position:absolute; top:10px; left:10px; z-index:10;">
+    <audio id="audio" controls style="display:none;"></audio>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
     <div id="app"></div>
     <div id="ui-layer"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+    <script type="module" src="./src/Main.js"></script>
+    <script>
+    document.getElementById('file-input').addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if (file){
+        const url = URL.createObjectURL(file);
+        const audio = document.getElementById('audio');
+        audio.src = url;
+        audio.play();
+      }
+    });
+    </script>
 </html>
