@@ -22,6 +22,24 @@ export class AudioAnalyzer {
     source.connect(this.analyser!).connect(this.audioContext!.destination);
   }
 
+  async loadAudio(file: File) {
+    await this.init();
+    const arrayBuffer = await file.arrayBuffer();
+    const audioBuffer = await this.audioContext!.decodeAudioData(arrayBuffer);
+    
+    const source = this.audioContext!.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(this.analyser!).connect(this.audioContext!.destination);
+    source.start(0);
+    
+    // Also connect to an audio element for controls
+    const audioEl = document.getElementById('audio') as HTMLAudioElement;
+    if (audioEl) {
+      audioEl.src = URL.createObjectURL(file);
+      audioEl.play();
+    }
+  }
+
   getFrequencyData(): Uint8Array | null {
     if (!this.analyser || !this.dataArray) return null;
     this.analyser.getByteFrequencyData(this.dataArray);
