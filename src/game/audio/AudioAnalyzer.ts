@@ -1,48 +1,38 @@
 export class AudioAnalyzer {
-  private audioContext: AudioContext | null = null
-  private analyzer: AnalyserNode | null = null
-  private source: AudioBufferSourceNode | null = null
-  private dataArray: Uint8Array | null = null
-  private bufferLength: number = 0
-  private beatCallbacks: Array<() => void> = []
+  private audioContext: AudioContext | null = null;
+  private analyser: AnalyserNode | null = null;
+  private dataArray: Uint8Array | null = null;
+  private bufferLength: number = 0;
 
   constructor() {}
 
-  public async init() {
-    this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-    this.analyzer = this.audioContext.createAnalyser()
-    this.analyzer.fftSize = 2048
-    this.bufferLength = this.analyzer.frequencyBinCount
-    this.dataArray = new Uint8Array(this.bufferLength)
+  async init() {
+    if (!this.audioContext) {
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.analyser = this.audioContext.createAnalyser();
+      this.analyser.fftSize = 2048;
+      this.bufferLength = this.analyser.frequencyBinCount;
+      this.dataArray = new Uint8Array(this.bufferLength);
+    }
   }
 
-  public async loadAudio(file: File): Promise<void> {
-    if (!this.audioContext) await this.init()
-    const arrayBuffer = await file.arrayBuffer()
-    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer)
-    this.source?.stop()
-    this.source = this.audioContext.createBufferSource()
-    this.source.buffer = audioBuffer
-    this.source.connect(this.analyzer!)
-    this.analyzer!.connect(this.audioContext.destination)
-    this.source.start(0)
+  async setMediaElement(el: HTMLMediaElement) {
+    await this.init();
+    const source = this.audioContext!.createMediaElementSource(el);
+    source.connect(this.analyser!).connect(this.audioContext!.destination);
   }
 
-  public getFrequencyData(): Uint8Array | null {
-    if (!this.analyzer || !this.dataArray) return null
-    this.analyzer.getByteFrequencyData(this.dataArray)
-    return this.dataArray
+  getFrequencyData(): Uint8Array | null {
+    if (!this.analyser || !this.dataArray) return null;
+    this.analyser.getByteFrequencyData(this.dataArray);
+    return this.dataArray;
   }
 
-  public getVolume(): number {
-    const arr = this.getFrequencyData()
-    if (!arr) return 0
-    let sum = 0
-    for (let i = 0; i < arr.length; i++) sum += arr[i]
-    return sum / arr.length
-  }
-
-  public onBeat(cb: () => void) {
-    this.beatCallbacks.push(cb)
+  getVolume(): number {
+    const data = this.getFrequencyData();
+    if (!data) return 0;
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) sum += data[i];
+    return sum / data.length / 255;
   }
 }
