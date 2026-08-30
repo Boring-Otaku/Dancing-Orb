@@ -3,6 +3,7 @@ import { AudioAnalyzer } from '../audio/AudioAnalyzer';
 export class UIManager {
     private container: HTMLElement;
     private analyzer: AudioAnalyzer;
+    private fileInput: HTMLInputElement | null = null;
 
     constructor(container: HTMLElement, analyzer: AudioAnalyzer) {
         this.container = container;
@@ -18,18 +19,20 @@ export class UIManager {
         uploadSection.style.zIndex = '100';
         uploadSection.style.pointerEvents = 'auto';
 
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'audio/*';
-        input.style.display = 'block';
-        input.style.marginBottom = '10px';
-
-        input.addEventListener('change', async (e) => {
-            const target = e.target as HTMLInputElement;
-            if (target.files && target.files[0]) {
-                await this.analyzer.loadAudio(target.files[0]);
-            }
-        });
+        // Use the file input from index.html
+        this.fileInput = document.getElementById('file-input') as HTMLInputElement;
+        
+        if (this.fileInput) {
+            this.fileInput.addEventListener('change', async (e) => {
+                const target = e.target as HTMLInputElement;
+                if (target.files && target.files[0]) {
+                    await this.analyzer.loadAudio(target.files[0]);
+                    // Hide the start hint when file is loaded
+                    const hint = document.getElementById('start-hint');
+                    if (hint) hint.style.display = 'none';
+                }
+            });
+        }
 
         const volumeMeterContainer = document.createElement('div');
         volumeMeterContainer.id = 'volume-meter-container';
@@ -37,6 +40,7 @@ export class UIManager {
         volumeMeterContainer.style.height = '20px';
         volumeMeterContainer.style.backgroundColor = '#333';
         volumeMeterContainer.style.border = '1px solid #fff';
+        volumeMeterContainer.style.marginTop = '10px';
 
         const volumeMeter = document.createElement('div');
         volumeMeter.id = 'volume-meter';
@@ -45,15 +49,15 @@ export class UIManager {
         volumeMeter.style.backgroundColor = '#00ff00';
 
         volumeMeterContainer.appendChild(volumeMeter);
-        uploadSection.appendChild(input);
+        uploadSection.appendChild(this.fileInput!);
         uploadSection.appendChild(volumeMeterContainer);
         this.container.appendChild(uploadSection);
 
         // Update volume meter in the animation loop
         const update = () => {
             const volume = this.analyzer.getVolume();
-            // Scale volume (0-255) to 0-100%
-            const percent = Math.min(100, (volume / 128) * 100);
+            // Scale volume (0-1) to 0-100%
+            const percent = Math.min(100, volume * 100);
             volumeMeter.style.width = `${percent}%`;
             requestAnimationFrame(update);
         };

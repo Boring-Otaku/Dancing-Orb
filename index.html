@@ -19,24 +19,35 @@
         font-family: sans-serif;
       }
       #ui-layer > * { pointer-events: auto; }
+      #file-input {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        background: rgba(0,0,0,0.7);
+        padding: 10px;
+        border-radius: 5px;
+        color: white;
+      }
+      #start-hint {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-family: sans-serif;
+        font-size: 24px;
+        text-align: center;
+        pointer-events: none;
+      }
     </style>
   </head>
   <body>
-    <input type="file" id="file-input" accept="audio/*" style="position:absolute; top:10px; left:10px; z-index:10;">
+    <input type="file" id="file-input" accept="audio/*">
     <audio id="audio" controls style="display:none;"></audio>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+    <div id="start-hint">Select an audio file to start dancing!</div>
     <div id="app"></div>
     <div id="ui-layer"></div>
-    <script type="module" src="./src/Main.js"></script>
-    <script>
-    document.getElementById('file-input').addEventListener('change', function(e){
-      const file = e.target.files[0];
-      if (file){
-        const url = URL.createObjectURL(file);
-        const audio = document.getElementById('audio');
-        audio.src = url;
-        audio.play();
-      }
-    });
-    </script>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
 </html>
