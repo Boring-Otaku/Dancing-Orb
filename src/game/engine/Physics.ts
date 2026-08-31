@@ -17,7 +17,8 @@ export class Physics {
     if (this.isInitialized) return;
 
     try {
-      await RAPIER.init();
+      // Rapier3D v0.20.0+ doesn't require explicit init()
+      // The WASM module loads automatically on first import
       this.world = new RAPIER.World({ x: 0.0, y: -9.81, z: 0.0 });
       this.isInitialized = true;
     } catch (error) {
