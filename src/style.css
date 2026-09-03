@@ -1,0 +1,438 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #04050d;
+  font-family: 'Rajdhani', sans-serif;
+  color: #fff;
+}
+
+#canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Neon text color styles */
+.neon-cyan {
+  color: #00f3ff;
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.6), 0 0 20px rgba(0, 243, 255, 0.3);
+}
+
+.neon-magenta {
+  color: #ff0077;
+  text-shadow: 0 0 10px rgba(255, 0, 119, 0.6), 0 0 20px rgba(255, 0, 119, 0.3);
+}
+
+.neon-yellow {
+  color: #ffff00;
+  text-shadow: 0 0 10px rgba(255, 255, 0, 0.6);
+}
+
+.neon-red {
+  color: #ff2255;
+  text-shadow: 0 0 10px rgba(255, 34, 85, 0.7);
+}
+
+/* HUD Overlay Layer */
+.hud-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.hud-top-bar {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+}
+
+.hud-stat-box {
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 15, 30, 0.65);
+  padding: 8px 18px;
+  border-radius: 6px;
+  border-left: 3px solid #00f3ff;
+  backdrop-filter: blur(8px);
+}
+
+.hud-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #8fa0c2;
+}
+
+.hud-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* Center Groove Meter */
+.groove-meter-container {
+  position: absolute;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.groove-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.groove-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 8;
+}
+
+.groove-fill {
+  fill: none;
+  stroke: #00f3ff;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.1s linear, stroke 0.3s ease;
+  filter: drop-shadow(0 0 8px #00f3ff);
+}
+
+.groove-text-box {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.groove-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #8fa0c2;
+}
+
+.groove-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Timing Accuracy Flash Popup */
+.hud-timing-feedback {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  opacity: 0;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.hud-timing-feedback.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.hud-timing-feedback.perfect {
+  color: #00ffff;
+  text-shadow: 0 0 20px #00ffff, 0 0 40px #00aaff;
+}
+
+.hud-timing-feedback.great {
+  color: #00ff88;
+  text-shadow: 0 0 15px #00ff88;
+}
+
+.hud-timing-feedback.miss {
+  color: #ff0055;
+  text-shadow: 0 0 15px #ff0055;
+}
+
+/* Bottom Bar */
+.hud-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.audio-spectrum-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 38px;
+  background: rgba(10, 15, 30, 0.65);
+  padding: 6px 12px;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+}
+
+.eq-bar {
+  width: 10px;
+  min-height: 4px;
+  background: #00f3ff;
+  border-radius: 2px;
+  transition: height 0.05s ease;
+}
+
+#eq-bass { background: #ff0077; box-shadow: 0 0 8px #ff0077; }
+#eq-mid { background: #00f3ff; box-shadow: 0 0 8px #00f3ff; }
+#eq-treble { background: #ffff00; box-shadow: 0 0 8px #ffff00; }
+
+.current-track-tag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  letter-spacing: 1px;
+  background: rgba(10, 15, 30, 0.65);
+  padding: 8px 18px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00ff88;
+  box-shadow: 0 0 8px #00ff88;
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+.hud-keys-hint {
+  display: flex;
+  gap: 8px;
+}
+
+.key-tag {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #ccd7e6;
+}
+
+/* Fever Banner */
+.fever-banner {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.8);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #ffff00;
+  text-shadow: 0 0 20px #ff0077, 0 0 40px #ffff00;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.fever-banner.active {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  animation: pulseFever 0.8s infinite alternate;
+}
+
+@keyframes pulseFever {
+  0% { transform: translateX(-50%) scale(1); }
+  100% { transform: translateX(-50%) scale(1.08); }
+}
+
+/* Modal Dialogs */
+.btn-top-menu {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 20;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid #00f3ff;
+  color: #00f3ff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-top-menu:hover {
+  background: #00f3ff;
+  color: #000;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  background: rgba(4, 5, 13, 0.85);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: #0d1224;
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  border-radius: 12px;
+  padding: 32px;
+  width: 90%;
+  max-width: 540px;
+  box-shadow: 0 0 35px rgba(0, 243, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.setting-section h3 {
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #8fa0c2;
+  margin-bottom: 10px;
+}
+
+.mode-buttons-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-mode {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.btn-mode.active {
+  border-color: #00f3ff;
+  background: rgba(0, 243, 255, 0.12);
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
+}
+
+.btn-mode span {
+  font-size: 13px;
+  color: #8fa0c2;
+}
+
+.btn-neon {
+  background: transparent;
+  border: 1px solid #00f3ff;
+  color: #00f3ff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.btn-neon.primary {
+  background: #00f3ff;
+  color: #000;
+  font-weight: 700;
+}
+
+.btn-neon:hover {
+  box-shadow: 0 0 18px rgba(0, 243, 255, 0.5);
+}
+
+.audio-source-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.slider-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-row input[type="range"] {
+  width: 55%;
+}
+
+.modal-grade {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 72px;
+  font-weight: 900;
+  text-align: center;
+  color: #ffff00;
+  text-shadow: 0 0 25px #ffff00;
+}
+
+.modal-details {
+  text-align: center;
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
